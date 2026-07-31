@@ -1,0 +1,26 @@
+# SonarQube Helm values — Community Edition (free), local-path storage,
+# exposed only inside the cluster (reached via Ingress, same pattern as
+# everything else on this free-tier cluster).
+edition: community
+
+postgresql:
+  enabled: true
+  persistence:
+    storageClass: local-path
+    size: 5Gi
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 5Gi
+
+service:
+  type: ClusterIP
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "2Gi" # SonarQube is memory-hungry; this is the biggest single consumer on your cluster
+  limits:
+    cpu: "1"
+    memory: "3Gi"

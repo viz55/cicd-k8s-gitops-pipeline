@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                // Same single repo as the CI pipeline - this job only
+                // reads the k8s/ folder, it never writes to git.
+                git branch: 'main', credentialsId: 'git', url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+            }
+        }
+
+        stage('Kubernetes Deployment') {
+            steps {
+                // NOTE: this stage is a manual-apply pattern. Once ArgoCD is
+                // deployed (Phase 3), this whole stage goes away — ArgoCD
+                // watches this repo and applies changes on its own. Keeping
+                // it here for now so you have a working pipeline before
+                // ArgoCD is set up.
+                //
+                // clusterName/serverUrl below must match YOUR k3s cluster,
+                // not an EKS endpoint. Get these from your kubeconfig:
+                //   cat ~/.kube/config-mega-devops
+                // clusterName -> the "name" under clusters:
+                // serverUrl   -> the "server" URL under clusters: (your
+                //                node's public IP on port 6443)
+                withKubeConfig(
+                    caCertificate: '',
+                    clusterName: 'k3s-mega-devops',
+                    contextName: '',
+                    credentialsId: 'k8-token',
+                    namespace: 'webapps',
+                    restrictKubeConfigAccess: false,
+                    serverUrl: 'https://YOUR_K3S_NODE_PUBLIC_IP:6443'
+                ) {
+                    sh "kubectl apply -f k8s/manifest.yaml -n webapps"
+                    sh "kubectl apply -f k8s/hpa.yaml -n webapps"
+                    sh "kubectl apply -f k8s/ingress.yaml -n webapps"
+                    sleep 30
+                    sh "kubectl get pods -n webapps"
+                    sh "kubectl get service -n webapps"
+                }
+            }
+        }
+    }
+}

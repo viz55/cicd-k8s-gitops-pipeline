@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars and fill in. This file must stay in .gitignore.
+#
+# Note: this is the SAME OCI tenancy/user as infra/terraform/cluster/'s
+# tfvars - you're just running Terraform against two different sets of
+# resources (the infra server itself, and the k3s cluster it will later
+# manage) from two separate state files.
+
+tenancy_ocid        = "ocid1.tenancy.oc1..xxxxxxx"
+user_ocid           = "ocid1.user.oc1..xxxxxxx"
+fingerprint         = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path    = "~/.oci/oci_api_key.pem"
+region              = "us-ashburn-1"
+compartment_ocid    = "ocid1.compartment.oc1..xxxxxxx"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"

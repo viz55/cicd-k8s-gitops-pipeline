@@ -1,0 +1,61 @@
+# Jenkins Helm values — installs Jenkins with baseline config already
+# applied via JCasC (Configuration as Code), instead of clicking through
+# the setup wizard. This is the pattern real teams use so a Jenkins
+# instance can be torn down and rebuilt identically from git, not
+# hand-configured and undocumented.
+controller:
+  adminUser: "admin"
+  adminPassword: "CHANGE_ME_ON_INSTALL" # override with --set on the helm command, never commit a real one
+
+  installPlugins:
+    - kubernetes
+    - workflow-aggregator
+    - git
+    - configuration-as-code
+    - sonar
+    - docker-workflow
+    - pipeline-stage-view
+    - email-ext
+    - matrix-auth
+
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      # Registers the "maven3" tool referenced in Jenkinsfile-CI's
+      # `tools { maven 'maven3' }` block, and "sonar-scanner" referenced
+      # in `SCANNER_HOME = tool 'sonar-scanner'`.
+      tool-config: |
+        tool:
+          maven:
+            installations:
+              - name: "maven3"
+                properties:
+                  - installSource:
+                      installers:
+                        - maven:
+                            id: "3.9.6"
+      # Registers the SonarQube server connection Jenkinsfile-CI expects
+      # via `withSonarQubeEnv('sonar')`. The actual token is added
+      # separately as a credential, referenced here by ID only.
+      sonar-config: |
+        unclassified:
+          sonarGlobalConfiguration:
+            installations:
+              - name: "sonar"
+                serverUrl: "http://sonarqube-sonarqube:9000" # in-cluster service DNS, see docs/IMPLEMENTATION-GUIDE.md
+                credentialsId: "sonar-token"
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 8Gi
+
+serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer

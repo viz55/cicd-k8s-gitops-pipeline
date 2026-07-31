@@ -1,0 +1,15 @@
+#cloud-config
+# Agent nodes can't self-configure at Terraform apply time because they
+# need the server's private IP + join token, which only exist after the
+# server node has booted. This is intentional, not a shortcut:
+#
+# After `terraform apply` finishes:
+#   1. SSH into the server node, read /home/ubuntu/node-token
+#   2. SSH into each agent node and run:
+#        curl -sfL https://get.k3s.io | \
+#          K3S_URL=https://<server-private-ip>:6443 \
+#          K3S_TOKEN=<token-from-step-1> sh -
+#
+# For a single-node setup (var.node_count = 1, the default), this file
+# is never used at all.
+package_update: true

@@ -1,0 +1,33 @@
+#cloud-config
+package_update: true
+
+packages:
+  - unzip
+  - git
+  - curl
+  - gnupg
+  - software-properties-common
+
+runcmd:
+  # --- Terraform ---
+  - curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com jammy main" > /etc/apt/sources.list.d/hashicorp.list
+  - apt-get update && apt-get install -y terraform
+
+  # --- kubectl ---
+  - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  - install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+  # --- Helm ---
+  - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+  # --- Docker CLI (for local image builds/tests, not required for the
+  #     pipeline itself since that runs inside Jenkins agent pods) ---
+  - curl -fsSL https://get.docker.com | sh
+  - usermod -aG docker ubuntu
+
+  # --- OCI CLI (so this box can also manage OCI resources directly if needed) ---
+  - curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh -o /tmp/oci-install.sh
+  - bash /tmp/oci-install.sh --accept-all-defaults
+
+final_message: "Infra server ready. SSH in, clone your repo, and run terraform from infra/terraform/cluster/."

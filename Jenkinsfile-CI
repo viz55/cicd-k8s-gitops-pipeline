@@ -1,0 +1,179 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven3'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Guard: Skip if this is our own automated commit') {
+            steps {
+                script {
+                    // Single-repo pattern: this same pipeline will later
+                    // commit an updated image tag back to THIS repo,
+                    // which would normally re-trigger this exact
+                    // pipeline via the webhook, forever. This stage
+                    // checks the last commit message and aborts early
+                    // if it matches the marker our own "Update Manifest"
+                    // stage uses - the first of two independent
+                    // safeguards (the second is the webhook path
+                    // filter described in docs/IMPLEMENTATION-GUIDE.md).
+                    def lastCommitMsg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    if (lastCommitMsg.contains('[skip ci]')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error("Skipping build: last commit was an automated manifest update (${lastCommitMsg})")
+                    }
+                }
+            }
+        }
+
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'git', url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+            }
+        }
+
+        stage('Compile') {
+            steps {
+                sh "mvn compile"
+            }
+        }
+
+        stage('Testing') {
+            steps {
+                sh "mvn test"
+            }
+        }
+
+        stage('Trivy FS Scan') {
+            steps {
+                sh "trivy fs --format table -o fs-report.html ."
+            }
+        }
+
+        stage('Sonar Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                        -Dsonar.projectKey=gcbank \
+                        -Dsonar.projectName=gcbank \
+                        -Dsonar.java.binaries=target
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh "mvn package"
+            }
+        }
+
+        stage('Publish To Nexus') {
+            steps {
+                withMaven(globalMavenSettingsConfig: 'devopsshack', maven: 'maven3', traceability: true) {
+                    sh "mvn deploy"
+                }
+            }
+        }
+
+        stage('Docker Image Build & Tag') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "docker build -t YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG ."
+                    }
+                }
+            }
+        }
+
+        stage('Scan Image') {
+            steps {
+                sh "trivy image --format table -o image-report.html YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh "docker push YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
+                    }
+                }
+            }
+        }
+
+        stage('Update Manifest In This Repo') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                        sh '''
+                            sed -i "s|YOUR_DOCKERHUB_USERNAME/bankapp:.*|YOUR_DOCKERHUB_USERNAME/bankapp:${IMAGE_TAG}|" k8s/manifest.yaml
+
+                            echo "Updated manifest file contents:"
+                            grep "image:" k8s/manifest.yaml
+
+                            git config user.name "Jenkins"
+                            git config user.email "jenkins@example.com"
+                            git add k8s/manifest.yaml
+                            # The [skip ci] marker is read by the Guard stage above -
+                            # this exact commit, when the webhook fires again, will
+                            # be recognized as our own automated change and aborted
+                            # immediately instead of re-running the whole pipeline.
+                            git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
+                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_USERNAME/YOUR_REPO.git HEAD:main
+                        '''
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                def jobName = env.JOB_NAME
+                def buildNumber = env.BUILD_NUMBER
+                def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+                def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
+
+                def body = """
+                    <html>
+                    <body>
+                    <div style="border: 4px solid ${bannerColor}; padding: 10px;">
+                    <h2>${jobName} - Build ${buildNumber}</h2>
+                    <div style="background-color: ${bannerColor}; padding: 10px;">
+                    <h3 style="color: white;">Pipeline Status: ${pipelineStatus.toUpperCase()}</h3>
+                    </div>
+                    <p>Check the <a href="${BUILD_URL}">console output</a>.</p>
+                    </div>
+                    </body>
+                    </html>
+                """
+
+                emailext (
+                    subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+                    body: body,
+                    to: 'YOUR_REAL_EMAIL@example.com',
+                    from: 'jenkins@example.com',
+                    replyTo: 'jenkins@example.com',
+                    mimeType: 'text/html',
+                )
+            }
+        }
+    }
+}

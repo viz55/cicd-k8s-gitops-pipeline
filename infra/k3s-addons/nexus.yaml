@@ -1,0 +1,71 @@
+# Nexus has no officially-maintained Helm chart (Sonatype dropped it),
+# so it's deployed as raw manifests instead — this itself is a real,
+# common situation you'll hit in production work, worth knowing rather
+# than hiding behind a third-party chart.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus-data
+  namespace: nexus3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus
+  namespace: nexus3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus
+  strategy:
+    type: Recreate # local-path storage can't be mounted by two pods at once
+  template:
+    metadata:
+      labels:
+        app: nexus
+    spec:
+      containers:
+        - name: nexus
+          image: sonatype/nexus3:3.70.1
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi" # Nexus is also memory-hungry; budget for this alongside SonarQube
+            limits:
+              cpu: "1"
+              memory: "2560Mi"
+          volumeMounts:
+            - mountPath: /nexus-data
+              name: nexus-data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 90 # Nexus is slow to start; don't lower this
+            periodSeconds: 10
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus
+  namespace: nexus3
+spec:
+  selector:
+    app: nexus
+  ports:
+    - port: 8081
+      targetPort: 8081

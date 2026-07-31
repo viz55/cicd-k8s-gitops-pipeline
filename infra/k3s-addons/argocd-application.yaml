@@ -1,0 +1,30 @@
+# ArgoCD Application — this is what replaces the manual `kubectl apply`
+# stage in Jenkinsfile-CD. ArgoCD continuously watches this repo's k8s/
+# folder and reconciles the live cluster to match it, rather than
+# Jenkins pushing changes directly. Apply this once ArgoCD itself is
+# installed (see docs/IMPLEMENTATION-GUIDE.md, Phase 6).
+#
+# Single-repo note: ArgoCD's `path` field already scopes it to just the
+# k8s/ subfolder of this one repo - it ignores src/, Jenkinsfiles, etc.
+# entirely on its own, so nothing extra was needed here to support the
+# monorepo layout.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bankapp
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/YOUR_REPO.git
+    targetRevision: main
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: webapps
+  syncPolicy:
+    automated:
+      prune: true    # removes resources deleted from git
+      selfHeal: true # reverts manual kubectl changes back to match git — this IS the point of GitOps
+    syncOptions:
+      - CreateNamespace=true
