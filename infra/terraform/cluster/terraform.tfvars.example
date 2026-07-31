@@ -8,6 +8,14 @@ private_key_path    = "~/.oci/oci_api_key.pem"
 region              = "us-ashburn-1"
 compartment_ocid    = "ocid1.compartment.oc1..xxxxxxx"
 ssh_public_key_path = "~/.ssh/id_rsa.pub"
+ssh_private_key_path = "~/.ssh/id_rsa"
+
 
 node_count = 1 # bump to 2 for a server+agent split, still free-tier eligible
 environment = "dev"
+node_shape     = "VM.Standard.E3.Flex"
+node_ocpus     = 2
+node_memory_gb = 16
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is (and must stay) in .gitignore.
+

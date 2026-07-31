@@ -8,7 +8,7 @@ data "oci_core_images" "ubuntu_arm" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Canonical Ubuntu"
   operating_system_version = "22.04"
-  shape                    = "VM.Standard.A1.Flex"
+  shape                    = var.node_shape
   sort_by                  = "TIMECREATED"
   sort_order               = "DESC"
 }
@@ -20,7 +20,7 @@ resource "oci_core_instance" "k3s_node" {
   compartment_id      = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   display_name        = "k3s-${count.index == 0 ? "server" : "agent-${count.index}"}"
-  shape                = "VM.Standard.A1.Flex"
+  shape                = var.node_shape
 
   shape_config {
     ocpus         = var.node_ocpus / var.node_count
