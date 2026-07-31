@@ -15,6 +15,7 @@ runcmd:
   - |
     PUBLIC_IP=$(curl -s -H "Authorization: Bearer Oracle" -L http://169.254.169.254/opc/v2/vnics/ | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['publicIp'])")
     curl -sfL https://get.k3s.io | sh -s - server --write-kubeconfig-mode 644 --disable traefik --tls-san "$${PUBLIC_IP}"
+    
   # Print the join token to a predictable path so it can be fetched over
   # SSH for adding agent nodes later.
   - cat /var/lib/rancher/k3s/server/node-token > /home/ubuntu/node-token
