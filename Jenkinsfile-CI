@@ -52,7 +52,7 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh "trivy fs --format table -o fs-report.html ."
+                sh "trivy fs --exit-code 1 --severity HIGH,CRITICAL --format table -o fs-report.html ."
             }
         }
 
@@ -103,7 +103,7 @@ pipeline {
 
         stage('Scan Image') {
             steps {
-                sh "trivy image --format table -o image-report.html YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --format table -o image-report.html YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
             }
         }
 
