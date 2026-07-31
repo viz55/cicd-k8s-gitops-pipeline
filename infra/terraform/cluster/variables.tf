@@ -21,7 +21,7 @@ variable "private_key_path" {
 variable "region" {
   description = "OCI region, e.g. us-ashburn-1"
   type        = string
-  default     = "us-ashburn-1"
+  default     = "ap-hyderabad-1"
 }
 
 variable "compartment_ocid" {
@@ -35,10 +35,22 @@ variable "ssh_public_key_path" {
   default     = "~/.ssh/id_rsa.pub"
 }
 
+variable "ssh_private_key_path" {
+  description = "Path to the local SSH private key matching ssh_public_key_path, used by Terraform's remote-exec provisioner to patch k3s's TLS SANs after boot"
+  type        = string
+  default     = "~/.ssh/id_rsa"
+}
+
 variable "node_count" {
   description = "Number of k3s nodes. 1 = single all-in-one node. 2 = server + agent, still within Always Free limits (4 OCPU / 24GB total, split across nodes)."
   type        = number
   default     = 1
+}
+
+variable "node_shape" {
+  description = "Compute shape for k3s nodes."
+  type        = string
+  default     = "VM.Standard.A1.Flex"
 }
 
 variable "node_ocpus" {
