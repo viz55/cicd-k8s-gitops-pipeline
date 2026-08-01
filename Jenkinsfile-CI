@@ -9,7 +9,7 @@ pipeline {
     IMAGE_TAG = "v${BUILD_NUMBER}"
     PATH = "${WORKSPACE}/bin:${env.PATH}"
     } 
-
+ 
     stages {
         stage('Guard: Skip if this is our own automated commit') {
             steps {
