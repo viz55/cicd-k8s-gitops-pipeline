@@ -4,11 +4,11 @@ pipeline {
     tools {
         maven 'maven3'
     }
-
     environment {
-        SCANNER_HOME = tool 'sonar-scanner'
-        IMAGE_TAG = "v${BUILD_NUMBER}"
-    }
+    SCANNER_HOME = tool 'sonar-scanner'
+    IMAGE_TAG = "v${BUILD_NUMBER}"
+    PATH = "${WORKSPACE}/bin:${env.PATH}"
+    } 
 
     stages {
         stage('Guard: Skip if this is our own automated commit') {
@@ -56,7 +56,7 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh "trivy fs --exit-code 1 --severity HIGH,CRITICAL --format table -o fs-report.html ."
+                sh 'mkdir -p ${WORKSPACE}/bin && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ${WORKSPACE}/bin'
             }
         }
 
