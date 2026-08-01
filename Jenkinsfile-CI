@@ -65,11 +65,13 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonar') {
                     sh '''
-                        $SCANNER_HOME/bin/sonar-scanner \
-                        -Dsonar.projectKey=gcbank \
-                        -Dsonar.projectName=gcbank \
-                        -Dsonar.java.binaries=target
-                    '''
+   			 $SCANNER_HOME/bin/sonar-scanner \
+  			 -Dsonar.projectKey=gcbank \
+    			 -Dsonar.projectName=gcbank \
+    			 -Dsonar.java.binaries=target \
+    			 -Dsonar.sources=src \
+    			 -Dsonar.exclusions=k8s/**,infra/**,docs/**,target/**,mvnw,mvnw.cmd
+		       '''
                 }
             }
         }
