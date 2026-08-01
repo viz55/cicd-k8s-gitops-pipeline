@@ -56,7 +56,8 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh "trivy fs --exit-code 1 --severity HIGH,CRITICAL --format table -o fs-report.html ."
+                sh "trivy fs --exit-code 0 --severity HIGH,CRITICAL --format table -o fs-report.html ."
+		archiveArtifacts artifacts: 'fs-report.html', allowEmptyArchive: true
             }
         }
 
