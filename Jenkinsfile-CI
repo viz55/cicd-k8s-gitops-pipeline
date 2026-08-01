@@ -34,7 +34,7 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'git', url: 'https://github.com/YOUR_USERNAME/YOUR_REPO.git'
+                git branch: 'main', credentialsId: 'git', url: 'https://github.com/viz55/cicd-k8s-gitops-pipeline.git'
             }
         }
 
@@ -103,7 +103,7 @@ pipeline {
 
         stage('Scan Image') {
             steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --format table -o image-report.html YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --format table -o image-report.html viz55/bankapp:$IMAGE_TAG"
             }
         }
 
@@ -111,7 +111,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker push YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG"
+                        sh "docker push viz55/bankapp:$IMAGE_TAG"
                     }
                 }
             }
@@ -120,9 +120,9 @@ pipeline {
         stage('Update Manifest In This Repo') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: ${GIT_USERNAME}, passwordVariable: ${GIT_PASSWORD})]) {
                         sh '''
-                            sed -i "s|YOUR_DOCKERHUB_USERNAME/bankapp:.*|YOUR_DOCKERHUB_USERNAME/bankapp:${IMAGE_TAG}|" k8s/manifest.yaml
+                            sed -i "s|viz55/bankapp:.*|viz55/bankapp:${IMAGE_TAG}|" k8s/manifest.yaml
 
                             echo "Updated manifest file contents:"
                             grep "image:" k8s/manifest.yaml
@@ -135,7 +135,7 @@ pipeline {
                             # be recognized as our own automated change and aborted
                             # immediately instead of re-running the whole pipeline.
                             git commit -m "Update image tag to ${IMAGE_TAG} [skip ci]"
-                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_USERNAME/YOUR_REPO.git HEAD:main
+                            git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/viz55/cicd-k8s-gitops-pipeline.git HEAD:main
                         '''
                     }
                 }
