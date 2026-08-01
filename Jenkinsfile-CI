@@ -101,35 +101,48 @@ pipeline {
         }
 
         stage('Docker Image Build & Tag') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker build -t YOUR_DOCKERHUB_USERNAME/bankapp:$IMAGE_TAG ."
-                    }
-                }
+    steps {
+        container('dind') {
+            withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker build -t viz55/bankapp:$IMAGE_TAG .
+                '''
             }
         }
+    }
+}
 
-        stage('Scan Image') {
-            steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --format table -o image-report.html viz55/bankapp:$IMAGE_TAG"
-            }
+	stage('Scan Image') {
+     steps {
+        container('dind') {
+            sh '''
+                apk add --no-cache curl
+                curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+                trivy image --exit-code 0 --severity HIGH,CRITICAL --format table -o image-report.html viz55/bankapp:$IMAGE_TAG
+            '''
+            archiveArtifacts artifacts: 'image-report.html', allowEmptyArchive: true
         }
+    }
+}
 
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh "docker push viz55/bankapp:$IMAGE_TAG"
-                    }
-                }
+	stage('Push Docker Image') {
+    steps {
+        container('dind') {
+            withCredentials([usernamePassword(credentialsId: 'docker-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push viz55/bankapp:$IMAGE_TAG
+                '''
             }
         }
+    }
+}
 
         stage('Update Manifest In This Repo') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: ${GIT_USERNAME}, passwordVariable: ${GIT_PASSWORD})]) {
+                    withCredentials([usernamePassword(credentialsId: 'git', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD')]) {
                         sh '''
                             sed -i "s|viz55/bankapp:.*|viz55/bankapp:${IMAGE_TAG}|" k8s/manifest.yaml
 
