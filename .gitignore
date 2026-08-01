@@ -60,3 +60,5 @@ docs/
 # --- OS ---
 .DS_Store
 *.swp
+kubeseal
+kubeseal-0.27.1-linux-amd64.tar.gz
