@@ -17,6 +17,7 @@ controller:
     - email-ext
     - matrix-auth
     - config-file-provider
+    - github
 
   JCasC:
     defaultConfig: true
@@ -42,7 +43,7 @@ controller:
           sonarGlobalConfiguration:
             installations:
               - name: "sonar"
-                serverUrl: "http://sonarqube-sonarqube:9000" # in-cluster service DNS, see docs/IMPLEMENTATION-GUIDE.md
+                serverUrl: "http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000" # in-cluster service DNS, see docs/IMPLEMENTATION-GUIDE.md
                 credentialsId: "sonar-token"
 
   resources:
