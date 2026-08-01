@@ -131,7 +131,7 @@ spec:
     spec:
       containers:
       - name: bankapp
-        image: viz55/bankapp:v16 # <-- Jenkins overwrites this tag on each build
+        image: viz55/bankapp:v17
         resources:
           requests:
             memory: "256Mi"
