@@ -15,6 +15,7 @@ controller:
     - docker-workflow
     - pipeline-stage-view
     - email-ext
+    - pipeline-maven
     - matrix-auth
     - config-file-provider
     - github
