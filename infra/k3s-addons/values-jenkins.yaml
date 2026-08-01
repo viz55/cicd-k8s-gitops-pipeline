@@ -16,6 +16,7 @@ controller:
     - pipeline-stage-view
     - email-ext
     - matrix-auth
+    - config-file-provider
 
   JCasC:
     defaultConfig: true
@@ -51,12 +52,10 @@ controller:
     limits:
       cpu: "1"
       memory: "2Gi"
-
+      
   serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
 
 persistence:
   enabled: true
   storageClass: local-path
   size: 8Gi
-
-

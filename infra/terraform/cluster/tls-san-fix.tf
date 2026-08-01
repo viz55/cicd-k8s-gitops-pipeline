@@ -39,4 +39,3 @@ resource "null_resource" "k3s_tls_san_fix" {
     ]
   }
 }
-
