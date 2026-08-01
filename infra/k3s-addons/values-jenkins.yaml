@@ -56,6 +56,19 @@ controller:
       
   serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
 
+agent:
+  image:
+    registry: ""
+    repository: "jenkins/inbound-agent"
+    tag: "3384.v60d89463d9e0-1"
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
 persistence:
   enabled: true
   storageClass: local-path
