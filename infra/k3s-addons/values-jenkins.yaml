@@ -17,6 +17,7 @@ controller:
     - pipeline-stage-view
     - email-ext
     - matrix-auth
+    - config-file-provider
 
   JCasC:
     defaultConfig: true
