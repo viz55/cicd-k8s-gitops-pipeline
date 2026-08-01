@@ -39,7 +39,7 @@ pipeline {
         }
 	stage('Install Trivy') {
     	    steps {
-               sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin'
+                sh 'mkdir -p ${WORKSPACE}/bin && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ${WORKSPACE}/bin'
             } 
         }
         stage('Compile') {
@@ -56,7 +56,7 @@ pipeline {
 
         stage('Trivy FS Scan') {
             steps {
-                sh 'mkdir -p ${WORKSPACE}/bin && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ${WORKSPACE}/bin'
+                sh "trivy fs --exit-code 1 --severity HIGH,CRITICAL --format table -o fs-report.html ."
             }
         }
 
