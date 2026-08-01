@@ -1,7 +1,8 @@
 # SonarQube Helm values — Community Edition (free), local-path storage,
 # exposed only inside the cluster (reached via Ingress, same pattern as
 # everything else on this free-tier cluster).
-edition: community
+community:
+  enabled: true
 
 postgresql:
   enabled: true

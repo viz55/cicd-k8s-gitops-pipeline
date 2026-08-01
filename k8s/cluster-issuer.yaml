@@ -5,7 +5,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: YOUR_REAL_EMAIL@example.com # <-- Let's Encrypt sends expiry/rate-limit notices here
+    email: vishnumv550@gmail.com # <-- Let's Encrypt sends expiry/rate-limit notices here
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:

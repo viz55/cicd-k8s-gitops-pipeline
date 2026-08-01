@@ -10,19 +10,22 @@
 #   3. Fill in the values below or pass via -backend-config flags so you
 #      never commit real keys to git.
 
-terraform {
-  backend "s3" {
-    bucket                      = "terraform-state"
-    key                         = "mega-devops/cluster/terraform.tfstate"
-    region                      = "us-ashburn-1" # match your OCI region
-    endpoint                    = "https://<namespace>.compat.objectstorage.us-ashburn-1.oraclecloud.com"
-    skip_region_validation      = true
-    skip_credentials_validation = true
-    skip_metadata_api_check     = true
-    force_path_style            = true
+# terraform {
+#  backend "s3" {
+ #   bucket                      = "terraform-state"
+  #  key                         = "mega-devops/cluster/terraform.tfstate"
+   # region                      = "ap-hyderabad-1" # match your OCI region
+    #endpoints                    = {
+   #      s3 = "https://axjyt8wcwdvg.compat.objectstorage.ap-hyderabad-1.oraclecloud.com"
+  # }
+   # skip_region_validation      = true
+    #skip_credentials_validation = true
+   # skip_metadata_api_check     = true
+   # skip_requesting_account_id  = true
+   # use_path_style            = true
     # access_key / secret_key intentionally NOT hardcoded here.
     # Export as env vars instead:
     #   export AWS_ACCESS_KEY_ID=<customer-secret-key-id>
     #   export AWS_SECRET_ACCESS_KEY=<customer-secret-key-secret>
-  }
-}
+#  }
+ # }

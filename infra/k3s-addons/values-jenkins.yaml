@@ -4,8 +4,7 @@
 # instance can be torn down and rebuilt identically from git, not
 # hand-configured and undocumented.
 controller:
-  adminUser: "admin"
-  adminPassword: "CHANGE_ME_ON_INSTALL" # override with --set on the helm command, never commit a real one
+ # override with --set on the helm command, never commit a real one
 
   installPlugins:
     - kubernetes
@@ -53,9 +52,11 @@ controller:
       cpu: "1"
       memory: "2Gi"
 
+  serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
+
 persistence:
   enabled: true
   storageClass: local-path
   size: 8Gi
 
-serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
+
