@@ -52,10 +52,12 @@ controller:
     limits:
       cpu: "1"
       memory: "2Gi"
+      
+  serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
+
 
 persistence:
   enabled: true
   storageClass: local-path
   size: 8Gi
 
-serviceType: ClusterIP # exposed via Ingress, not a cloud LoadBalancer
