@@ -1,9 +1,27 @@
 alertmanager:
   enabled: true # was disabled in the original; enable it, it's free and this is the whole point of alerting
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+
 prometheus:
   prometheusSpec:
     service:
       type: ClusterIP # was LoadBalancer — no cloud LB exists here, we reach it via Ingress instead
+    resources:
+      requests:
+        cpu: 100m
+        memory: 300Mi
+      limits:
+        cpu: 400m
+        memory: 600Mi
+    retention: 5d # explicit safety net — don't let default retention silently fill a 5Gi disk
+    retentionSize: "4GB" # stop well short of the 5Gi PVC so the WAL never hits ENOSPC
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -13,23 +31,74 @@ prometheus:
           resources:
             requests:
               storage: 5Gi
+
 grafana:
   enabled: true
   service:
-    type: ClusterIP # was LoadBalancer — expose via Ingress + your domain instead (see below)
+    type: ClusterIP # was LoadBalancer — expose via Ingress + your domain instead
   adminUser: admin
   adminPassword: CHANGE_ME # set via --set on the helm command, never commit a real password here
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 1Gi
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - grafana.megprj.duckdns.org
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.megprj.duckdns.org
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
 nodeExporter:
   service:
     type: ClusterIP
+
 kubeStateMetrics:
   enabled: true
-additionalScrapeConfigs:
-  - job_name: node-exporter
-    static_configs:
-      - targets:
-          - node-exporter:9100
-  - job_name: kube-state-metrics
-    static_configs:
-      - targets:
-          - kube-state-metrics:8080
+
+# VERIFY these two blocks' key paths against your own `helm show values` output
+# before applying - subchart resource keys are the one thing I can't fully
+# confirm from here. Run:
+#   helm show values prometheus-community/kube-prometheus-stack | grep -A8 "^kube-state-metrics:"
+#   helm show values prometheus-community/kube-prometheus-stack | grep -A8 "^prometheus-node-exporter:"
+# and confirm "resources:" sits exactly where these two blocks expect it.
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
