@@ -131,7 +131,7 @@ spec:
     spec:
       containers:
       - name: bankapp
-        image: viz55/bankapp:v25
+        image: viz55/bankapp:v27
         resources:
           requests:
             memory: "450Mi"
