@@ -16,7 +16,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_USERNAME/YOUR_REPO.git
+    repoURL: https://github.com/viz55/cicd-k8s-gitops-pipeline.git
     targetRevision: main
     path: k8s
   destination:
