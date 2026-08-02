@@ -23,8 +23,12 @@ alertmanager:
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 4h
-      routes: []
+      routes:
+        - receiver: 'null'
+          matchers:
+            - alertname =~ "InfoInhibitor|Watchdog"
     receivers:
+      - name: 'null'
       - name: 'email-notifications'
         email_configs:
           - to: 'vishnumv550@gmail.com'
