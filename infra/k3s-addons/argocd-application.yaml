@@ -22,6 +22,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: webapps
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: bankapp
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       prune: true    # removes resources deleted from git
