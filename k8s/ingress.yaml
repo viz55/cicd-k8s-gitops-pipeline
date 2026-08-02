@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: bankapp.YOUR-DOMAIN.com # <-- your real domain, or a free DDNS/Cloudflare Tunnel hostname
+    - host: megprj-bankapp.duckdns.org # <-- your real domain, or a free DDNS/Cloudflare Tunnel hostname
       http:
         paths:
           - path: /
@@ -23,5 +23,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - bankapp.YOUR-DOMAIN.com
+        - megprj-bankapp.duckdns.org
       secretName: bankapp-tls
