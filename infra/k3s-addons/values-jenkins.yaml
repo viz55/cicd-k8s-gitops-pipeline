@@ -64,8 +64,8 @@ agent:
     tag: "3384.v60d89463d9e0-1"
   resources:
     requests:
-      cpu: "500m"
-      memory: "1Gi"
+      cpu: "200m"
+      memory: "512Mi"
     limits:
       cpu: "1"
       memory: "2Gi"
@@ -79,8 +79,8 @@ agent:
       privileged: true
       resources:
         requests:
-          cpu: "1"
-          memory: "2Gi"
+          cpu: "300m"
+          memory: "1Gi"
         limits:
           cpu: "2"
           memory: "4Gi"
