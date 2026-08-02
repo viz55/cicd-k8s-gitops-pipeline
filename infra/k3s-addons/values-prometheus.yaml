@@ -57,11 +57,11 @@ grafana:
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
     hosts:
-      - grafana.megprj.duckdns.org
+      - grafana-megprj.duckdns.org
     tls:
       - secretName: grafana-tls
         hosts:
-          - grafana.megprj.duckdns.org
+          - grafana-megprj.duckdns.org
 
 prometheusOperator:
   resources:
