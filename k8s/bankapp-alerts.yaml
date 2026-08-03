@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bankapp-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: bankapp.rules
+      rules:
+        - alert: BankappHighErrorRate
+          expr: >
+            sum(rate(http_server_requests_seconds_count{job="bankapp-service", outcome="SERVER_ERROR"}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{job="bankapp-service"}[5m]))
+            > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Bankapp error rate above 5%"
+            description: "More than 5% of bankapp HTTP requests have returned 5xx over the last 5 minutes."
