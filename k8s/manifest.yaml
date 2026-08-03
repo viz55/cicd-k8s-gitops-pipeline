@@ -5,10 +5,10 @@
 # input you feed into kubeseal locally; never `kubectl apply -f` this
 # file directly in a real setup, and never git-add it.
 apiVersion: v1
-kind: Secret
+kind: Secret 
 metadata:
   name: mysql-secret
-  namespace: webapps
+  namespace: webapps 
 type: Opaque
 stringData:
   MYSQL_ROOT_PASSWORD: CHANGE_ME_LOCALLY # set a real password only in your local copy, never in git
@@ -182,6 +182,6 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    name: http
+    name: http 
   selector:
     app: bankapp
