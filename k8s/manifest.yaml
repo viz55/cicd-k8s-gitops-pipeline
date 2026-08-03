@@ -120,7 +120,6 @@ metadata:
   name: bankapp
   namespace: webapps
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: bankapp
