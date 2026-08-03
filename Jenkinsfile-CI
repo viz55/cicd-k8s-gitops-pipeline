@@ -31,12 +31,25 @@ pipeline {
                 }
             }
         }
+	stage('Guard: Skip if only k8s/ manifests changed') {
+            steps {
+                script {
+                    def changedFiles = sh(script: 'git diff --name-only HEAD~1 HEAD', returnStdout: true).trim().split('\n')
+                    def onlyK8sChanged = changedFiles.every { it.startsWith('k8s/') }
+                    if (onlyK8sChanged) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error("Skipping build: only k8s/ manifests changed (CD/ArgoCD concern, not CI): ${changedFiles.join(', ')}")
+                    }
+                }
+            }
+        }
 
         stage('Git Checkout') {
             steps {
                 git branch: 'main', credentialsId: 'git', url: 'https://github.com/viz55/cicd-k8s-gitops-pipeline.git'
             }
         }
+
 	stage('Install Trivy') {
     	    steps {
                 sh 'mkdir -p ${WORKSPACE}/bin && curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ${WORKSPACE}/bin'
