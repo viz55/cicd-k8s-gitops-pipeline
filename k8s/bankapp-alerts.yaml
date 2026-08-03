@@ -21,3 +21,4 @@ spec:
           annotations:
             summary: "Bankapp error rate above 5%"
             description: "More than 5% of bankapp HTTP requests have returned 5xx over the last 5 minutes."
+# path-exclusion test
