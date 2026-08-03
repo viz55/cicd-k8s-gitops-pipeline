@@ -5,7 +5,7 @@
 # input you feed into kubeseal locally; never `kubectl apply -f` this
 # file directly in a real setup, and never git-add it.
 apiVersion: v1
-kind: Secret
+kind: Secret 
 metadata:
   name: mysql-secret
   namespace: webapps
