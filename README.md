@@ -2,6 +2,9 @@
 
 ![CI](https://img.shields.io/badge/CI-Jenkins-red?logo=jenkins)
 ![CD](https://img.shields.io/badge/CD-ArgoCD-orange?logo=argo)
+![SonarQube](https://img.shields.io/badge/Code%20Quality-SonarQube-4E9BCD?logo=sonarqube&logoColor=white)
+![Trivy](https://img.shields.io/badge/Security-Trivy-1904DA?logo=trivy&logoColor=white)
+![Nexus](https://img.shields.io/badge/Artifact%20Repo-Nexus-1D63ED?logo=sonatype&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-blue?logo=kubernetes)
 ![Monitoring](https://img.shields.io/badge/Monitoring-Prometheus%20%7C%20Grafana-yellow?logo=grafana)
 ![Cloud](https://img.shields.io/badge/Cloud-Oracle%20Cloud-red?logo=oracle)
