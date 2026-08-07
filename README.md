@@ -1,6 +1,6 @@
 # SecureBank - Full CI/CD & GitOps Platform on Kubernetes
 
-![Build](https://github.com/viz55/cicd-k8s-gitops-pipeline/actions/workflows/ci.yml/badge.svg)
+![Build](https://github.com/viz55/cicd-k8s-gitops-pipeline/actions/workflows/Jenkinsfile-CI/badge.svg)
 ![CI](https://img.shields.io/badge/CI-Jenkins-red?logo=jenkins)
 ![CD](https://img.shields.io/badge/CD-ArgoCD-orange?logo=argo)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-blue?logo=kubernetes)
@@ -21,7 +21,7 @@ cost.
 
 Most portfolio projects stop at "deployed an app to Kubernetes." This one
 goes further: a real SonarQube quality gate that can fail a build, a real
-GitOps loop where **git — not a person running `kubectl apply` — is the
+GitOps loop where **git (not a person running `kubectl apply`) is the
 source of truth** for what's running, and real monitoring that catches
 and emails on actual production-style failures (a bad deploy, an
 autoscaler misconfiguration, a session-affinity bug under load). Building
@@ -79,8 +79,8 @@ solved](#-notable-engineering-problems-solved) below.
 ### Why a single repo needs a loop guard
 
 Jenkins commits the newly-built image tag back into this same repo's
-`k8s/manifest.yaml`, and a GitHub webhook fires on *every* push —
-including that automated one — which would normally re-trigger CI
+`k8s/manifest.yaml`, and a GitHub webhook fires on *every* push,
+including the automated ones which would normally re-trigger CI
 forever. Two independent layers prevent it:
 1. A **Guard stage** at the top of `Jenkinsfile-CI` that reads the last
    commit message and aborts immediately if it contains `[skip ci]` (the
@@ -98,7 +98,7 @@ forever. Two independent layers prevent it:
 - A GitHub account with one empty repo (app source, Jenkinsfiles, and
   `k8s/` manifests all live together — see above for why)
 - A DockerHub account
-- An SSH client (MobaXterm, PuTTY, or similar) — nothing else needs to be
+- An SSH client (MobaXterm, PuTTY, or similar) - nothing else needs to be
   installed locally; provisioning runs from Oracle Cloud Shell and then
   from the infra server itself
 
@@ -107,7 +107,7 @@ forever. Two independent layers prevent it:
 A small, always-on box, separate from the cluster, holds Terraform /
 Helm / kubectl and is where every setup step below runs from. Cloud
 Shell, a free browser-based terminal Oracle runs inside OCI, with
-Terraform/OCI CLI/kubectl/Helm preinstalled — solves the problem of 
+Terraform/OCI CLI/kubectl/Helm preinstalled - solves the problem of 
 creating the first server before any server exists to provision it, 
 without installing anything locally or on the cloud.
 
@@ -128,7 +128,7 @@ terraform output ssh_command
 ```
 
 Download `~/.ssh/id_rsa` locally, then switch to MobaXterm/SSH into the
-infra server's public IP — everything from here on runs there, not in
+infra server's public IP - everything from here on runs there, not in
 Cloud Shell and not on your own machine.
 
 ### 2. Provision the k3s cluster (from the infra server)
@@ -289,7 +289,7 @@ Alertmanager → Gmail SMTP delivery is genuinely working.*
 ### Infrastructure
 
 ![kubectl get pods across all namespaces, all healthy](assets/screenshots/kubectl-pods-healthy.png)
-*The full stack — app, CI tooling, GitOps, monitoring — running on a
+*The full stack: *app, CI tooling, GitOps, monitoring* running on a
 single self-hosted k3s node.*
 
 ## 🎯 Notable engineering problems solved
@@ -298,7 +298,7 @@ A few of the more instructive ones — the rest were smaller variants of
 the same categories:
 
 - **Session affinity under horizontal scaling:** logging in worked at 1
-  replica but silently failed at 2 — Spring Security's in-memory session
+  replica but silently failed at 2 - Spring Security's in-memory session
   store meant a login on pod A wasn't recognized by pod B on the very
   next redirect. Fixed with sticky-session ingress annotations
   (`nginx.ingress.kubernetes.io/affinity: cookie`).
@@ -333,18 +333,6 @@ the same categories:
   ![application.properties showing the forward-headers-strategy line](assets/screenshots/bug-forward-headers-config.png)
   *The one-line fix in `application.properties`.*
 
-- **Login completely down:** bankapp runs 2 replicas with no session affinity 
-  configured anywhere. Spring Security's session store is in-memory, per-pod.
-  POST /login lands on pod A, creates a session there; the follow-up redirect to
-  /dashboard can land on pod B via round-robin, which has never heard of that
-  session ID → treated as unauthenticated → bounced back to /login with no error
-  (since this isn't a credentials failure, it's a "not authenticated at all" state).
-  Fix: add sticky session annotations to `k8s/ingress.yaml`.
-
-  ![bankapp Ingress resource's `metadata.annotations` section](assets/screenshots/bug-metadata-annotations.png)
-  *nginx sets its own cookie (`INGRESSCOOKIE`, separate from your app's `JSESSIONID`) on the
-  first response, recording which specific backend pod handled that request.*
-  
 ## 🔭 Beyond this demo
 
 Given more than a single free-tier-adjacent node, the next architectural
