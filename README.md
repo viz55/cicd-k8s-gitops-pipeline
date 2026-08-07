@@ -1,6 +1,5 @@
 # SecureBank - Full CI/CD & GitOps Platform on Kubernetes
 
-![Build](https://github.com/viz55/cicd-k8s-gitops-pipeline/actions/workflows/Jenkinsfile-CI/badge.svg)
 ![CI](https://img.shields.io/badge/CI-Jenkins-red?logo=jenkins)
 ![CD](https://img.shields.io/badge/CD-ArgoCD-orange?logo=argo)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-k3s-blue?logo=kubernetes)
